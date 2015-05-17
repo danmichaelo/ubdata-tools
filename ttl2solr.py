@@ -17,41 +17,41 @@ logger.addHandler(console_handler)
 
 WD = Namespace('http://data.ub.uio.no/webdewey-terms#')
 
+schema = {
+    SKOS.prefLabel: 'prefLabel_t',  # _t for type:text, se Solr schema.xml
+    SKOS.altLabel: 'altLabel_t',
+    SKOS.definition: 'definition_t',
+    SKOS.scopeNote: 'scopeNote_t',
+    SKOS.notation: 'notation_s',  # string, right?
+    WD.including: 'including_t',
+    WD.classHere: 'classhere_t',
+    WD.variantName: 'variantname_t',
+
+    # Ignore:
+    SKOS.editorialNote: None,  # eller bør vi ha den med så vi kan veksle den?? 'editorialNote_t',
+    RDF.type: None,
+    SKOS.inScheme: None,
+    SKOS.topConceptOf: None,
+    SKOS.broader: None,
+    SKOS.related: None,
+    SKOS.historyNote: None,
+    OWL.sameAs: None,
+    DCTERMS.identifier: None,
+    DCTERMS.modified: None,
+    WD.synthesized: None,
+    WD.component: None
+}
+
+vocabs = {
+    URIRef('http://data.ub.uio.no/ddc'): 'ddc23no',
+    URIRef('http://data.ub.uio.no/humord'): 'humord'
+}
+
 
 def convert(infile, outfile):
     logger.debug('Loading %s', infile)
     g = Graph()
     g.load(infile, format='turtle')
-
-    schema = {
-        SKOS.prefLabel: 'prefLabel_t',  # _t for type:text, se Solr schema.xml
-        SKOS.altLabel: 'altLabel_t',
-        SKOS.definition: 'definition_t',
-        SKOS.scopeNote: 'scopeNote_t',
-        SKOS.notation: 'notation_s',  # string, right?
-        WD.including: 'including_t',
-        WD.classHere: 'classhere_t',
-        WD.variantName: 'variantname_t',
-
-        # Ignore:
-        SKOS.editorialNote: None,  # eller bør vi ha den med så vi kan veksle den?? 'editorialNote_t',
-        RDF.type: None,
-        SKOS.inScheme: None,
-        SKOS.topConceptOf: None,
-        SKOS.broader: None,
-        SKOS.related: None,
-        SKOS.historyNote: None,
-        OWL.sameAs: None,
-        DCTERMS.identifier: None,
-        DCTERMS.modified: None,
-        WD.synthesized: None,
-        WD.component: None
-    }
-
-    vocabs = {
-        URIRef('http://data.ub.uio.no/ddc'): 'ddc23no',
-        URIRef('http://data.ub.uio.no/humord'): 'humord'
-    }
 
     # Build parent lookup hash
     logger.debug('Building parent lookup hash')
