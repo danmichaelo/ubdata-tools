@@ -1,3 +1,5 @@
+# encoding=utf8
+
 from rdflib.graph import Graph, Literal
 from rdflib.namespace import Namespace, URIRef, OWL, RDF, DC, DCTERMS, FOAF, XSD, SKOS, RDFS
 import json
