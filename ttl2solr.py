@@ -3,11 +3,23 @@
 from rdflib.graph import Graph, Literal
 from rdflib.namespace import Namespace, URIRef, OWL, RDF, DC, DCTERMS, FOAF, XSD, SKOS, RDFS
 import json
+import argparse
+import logging
+import logging.handlers
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+formatter = logging.Formatter('[%(asctime)s %(levelname)s] %(message)s')
+
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
 
 WD = Namespace('http://data.ub.uio.no/webdewey-terms#')
 
 
 def convert(infile, outfile):
+    logger.debug('Loading %s', infile)
     g = Graph()
     g.load(infile, format='turtle')
 
@@ -41,39 +53,32 @@ def convert(infile, outfile):
         URIRef('http://data.ub.uio.no/humord'): 'humord'
     }
 
-    docs = []
-
     # Build parent lookup hash
+    logger.debug('Building parent lookup hash')
     parents = {}
-    labels = {}
-    for res in g.query("""
-                       PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-                       PREFIX : <http://data.ub.uio.no/humord/>
-
-                       SELECT ?concept ?parent ?label ?altlabel
-                       WHERE {
-                         ?parent ^skos:broader ?concept .
-                         OPTIONAL { ?parent skos:prefLabel ?label . }
-                         OPTIONAL { ?parent skos:altLabel ?altlabel . }
-                       }
-                       """):
-
-        c = res[0].format()  # to string
-        p = res[1].format()  # to string
+    for c, p in g.subject_objects(SKOS.broader):
+        c = c.format()  # to string
+        p = p.format()  # to string
         if c not in parents:
             parents[c] = set()
         parents[c].add(p)
-        if res[2] is not None:
-            labels[p] = res[2].value
-        elif res[3] is not None:
-            labels[p] = res[3].value
 
+    # Build labels lookup hash using two fast passes
+    logger.debug('Building labels lookup hash')
+    labels = {}
+    for c, p in g.subject_objects(SKOS.altLabel):
+        labels[c.format()] = p.value
+    for c, p in g.subject_objects(SKOS.prefLabel):
+        labels[c.format()] = p.value  # overwrite altLabel with prefLabel if found
+
+    logger.debug('Building documents')
+    docs = []
     for uriref in g.subjects(RDF.type, SKOS.Concept):
         doc = {'id': uriref.format()}
 
         for pred, obj in g.predicate_objects(uriref):
             if pred not in schema:
-                print 'Encountered unknown predicate with no mapping to JSON: ', pred
+                logger.error('Encountered unknown predicate with no mapping to JSON: %s', pred)
                 continue
             if pred == SKOS.inScheme and schema[pred] in vocabs:
                 doc['vocab'] = vocabs[schema[pred]]
@@ -98,13 +103,35 @@ def convert(infile, outfile):
             level += 1
 
         for level, items in enumerate(byLevel[1:-1]):
-            # print level, items
+            # logger.debug(level, items)
             doc['parentsLevel{}'.format(level)] = [labels[x] for x in items if x in labels]  # Vi mangler labels for enkelt toppetiketter, som f.eks. 'http://data.ub.uio.no/ddc/19'
 
         docs.append(doc)
+    logger.debug('Generated %d documents', len(docs))
 
+    logger.debug('Saving %s', outfile)
     json.dump(docs, open(outfile, 'w'), indent=2)
 
 
-# convert('humord.ttl', 'humord_docs.json')
-convert('ddc100-ddc199.999.ttl', 'ddc100-ddc199.999_docs.json')
+def main():
+
+    parser = argparse.ArgumentParser(description='Convert Turtle to SOLR JSON')
+    parser.add_argument('infile', nargs=1, help='Input Turtle file')
+    parser.add_argument('outfile', nargs=1, help='Output SOLR JSON')
+    parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='More verbose output')
+
+    args = parser.parse_args()
+
+    if args.verbose:
+        console_handler.setLevel(logging.DEBUG)
+    else:
+        console_handler.setLevel(logging.INFO)
+
+    in_file = args.infile[0]
+    out_file = args.outfile[0]
+
+    convert(in_file, out_file)
+
+
+if __name__ == '__main__':
+    main()
