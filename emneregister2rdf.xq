@@ -1,3 +1,4 @@
+declare namespace owl     = "http://www.w3.org/2002/07/owl#";
 declare namespace marcxml = "http://www.loc.gov/MARC21/slim";
 declare namespace rdf     = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 declare namespace rdfs    = "http://www.w3.org/2000/01/rdf-schema#";
@@ -198,9 +199,32 @@ as element()*{
 	</stats>
 };
 
+declare function local:addSameAs($base as xs:string, $doc as node()?) {
+	element { $doc/name() } {
+		$doc/@*,
+		for $record in $doc/node()
+		return element { $record/name() } {
+			$record/@*,
+			if ($record/dct:identifier) then
+				<owl:sameAs rdf:resource="{ $base }{ $record/dct:identifier/text() }"/>
+			else (),
+			for $node in $record/node()
+			return $node
+		}
+	}
+};
+
+declare function local:main() {
+	let $docs := local:toRdf( doc( $file )/*[name()=$base]/post, $scheme, $uri_base, $signature_handler)
+	return if ($base = 'ntub') then
+		local:addSameAs('http://ntnu.no/ub/data/tekord#', $docs)
+	else
+		$docs
+};
+
+local:main()
 
 (: To test a specific post: :)
 (: local:post(doc('humord.xml')/hume/post[descendant::term-id/text()="HUME18920"]) :)
 
-local:toRdf( doc( $file )/*[name()=$base]/post, $scheme, $uri_base, $signature_handler)
 
