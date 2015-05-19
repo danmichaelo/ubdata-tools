@@ -67,9 +67,9 @@ def convert(infile, outfile):
     logger.debug('Building labels lookup hash')
     labels = {}
     for c, p in g.subject_objects(SKOS.altLabel):
-        labels[c.format()] = p.value
+        labels[c.format()] = p.format()
     for c, p in g.subject_objects(SKOS.prefLabel):
-        labels[c.format()] = p.value  # overwrite altLabel with prefLabel if found
+        labels[c.format()] = p.format()  # overwrite altLabel with prefLabel if found
 
     logger.debug('Building documents')
     docs = []
@@ -88,7 +88,7 @@ def convert(infile, outfile):
             if schema[pred] not in doc:
                 doc[schema[pred]] = []
 
-            doc[schema[pred]].append(obj.value)
+            doc[schema[pred]].append(obj.format())
 
         # Add labels from broader concepts
 
