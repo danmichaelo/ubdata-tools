@@ -9,6 +9,7 @@ declare variable $scheme external := 'http://data.ub.uio.no/humord';
 declare variable $uri_base external := concat($scheme, '/c');
 declare variable $base external := 'hume';
 declare variable $file external := 'humord.xml';
+declare variable $signature_handler external := 'ddc';
 
 
 (: Strip off non-valid characters, return only non-empty values :)
@@ -161,12 +162,6 @@ as element()*
 	</rdf:RDF>
 };
 
-declare function local:toRdf( $posts as element()*, $scheme as xs:string, $uri_base as xs:string )
-as element()*
-{
-	local:toRdf( $posts, $scheme, $uri_base, 'ddc' )
-};
-
 declare function local:stats( $posts as element()*)
 as element()*{
 	<stats>
@@ -207,5 +202,5 @@ as element()*{
 (: To test a specific post: :)
 (: local:post(doc('humord.xml')/hume/post[descendant::term-id/text()="HUME18920"]) :)
 
-local:toRdf( doc( $file )/*[name()=$base]/post, $scheme, $uri_base)
+local:toRdf( doc( $file )/*[name()=$base]/post, $scheme, $uri_base, $signature_handler)
 
