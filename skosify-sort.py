@@ -178,7 +178,7 @@ if __name__ == '__main__':
 
     g = Graph()
     args = parser.parse_args()
-    formats = {'.ttl': 'turtle', '.nt': 'nt'}
+    formats = {'.xml': 'xml', '.ttl': 'turtle', '.nt': 'nt'}
     for fname in args.infiles:
         ff = formats[os.path.splitext(fname)[-1]]
         g.load(fname, format=ff)
