@@ -146,7 +146,7 @@ as element()*
 	}
 };
 
-declare function emneregister:toRdf( $posts as element()*, $base as xs:string, $scheme as xs:string, $uri_base as xs:string, $signature_handler as xs:string )
+declare function emneregister:toRdf( $posts as element()*, $scheme as xs:string, $uri_base as xs:string, $signature_handler as xs:string )
 as element()*
 {
 	let $docs := emneregister:posts($posts, $scheme, $uri_base, $signature_handler)
@@ -155,7 +155,7 @@ as element()*
 		xmlns:skos="http://www.w3.org/2004/02/skos/core#"
 		xmlns:dct="http://purl.org/dc/terms/">
 	{ 
-		if ($base = 'ntub') then
+		if ($scheme = 'http://data.ub.uio.no/humord') then
 			emneregister:addSameAs('http://ntnu.no/ub/data/tekord#', $docs)
 		else
 			$docs
