@@ -155,7 +155,7 @@ as element()*
 		xmlns:skos="http://www.w3.org/2004/02/skos/core#"
 		xmlns:dct="http://purl.org/dc/terms/">
 	{ 
-		if ($scheme = 'http://data.ub.uio.no/humord') then
+		if ($scheme = 'http://data.ub.uio.no/tekord') then
 			emneregister:addSameAs('http://ntnu.no/ub/data/tekord#', $docs)
 		else
 			$docs
