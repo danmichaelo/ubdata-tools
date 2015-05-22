@@ -141,6 +141,10 @@ as element()*
 				}{
 					for $x in $post/se-ogsa-id/text()
 					return <skos:related rdf:resource="{ emneregister:uriFromTermId( $uri_base, $x ) }"/>
+				}{
+					if ($scheme = 'http://data.ub.uio.no/tekord') then
+						<owl:sameAs rdf:resource="http://ntnu.no/ub/data/tekord#{ $post/term-id/text() }"/>
+					else ()
 				}
 			</skos:Concept>
 	}
@@ -149,16 +153,11 @@ as element()*
 declare function emneregister:toRdf( $posts as element()*, $scheme as xs:string, $uri_base as xs:string, $signature_handler as xs:string )
 as element()*
 {
-	let $docs := emneregister:posts($posts, $scheme, $uri_base, $signature_handler)
-	return
 	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 		xmlns:skos="http://www.w3.org/2004/02/skos/core#"
 		xmlns:dct="http://purl.org/dc/terms/">
 	{ 
-		if ($scheme = 'http://data.ub.uio.no/tekord') then
-			emneregister:addSameAs('http://ntnu.no/ub/data/tekord#', $docs)
-		else
-			$docs
+		emneregister:posts($posts, $scheme, $uri_base, $signature_handler)
 	}
 	</rdf:RDF>
 };
@@ -197,21 +196,6 @@ as element()*{
 			count( $posts[underemnefrase] )
 		}</count>
 	</stats>
-};
-
-declare function emneregister:addSameAs($base as xs:string, $doc as node()?) {
-	element { $doc/name() } {
-		$doc/@*,
-		for $record in $doc/node()
-		return element { $record/name() } {
-			$record/@*,
-			if ($record/dct:identifier) then
-				<owl:sameAs rdf:resource="{ $base }{ $record/dct:identifier/text() }"/>
-			else (),
-			for $node in $record/node()
-			return $node
-		}
-	}
 };
 
 (: To test a specific post: :)
