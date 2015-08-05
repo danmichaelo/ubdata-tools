@@ -6,6 +6,7 @@ import json
 import argparse
 import logging
 import logging.handlers
+from six import text_type
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -62,8 +63,8 @@ def convert(infile, outfile):
     logger.debug('Building parent lookup hash')
     parents = {}
     for c, p in g.subject_objects(SKOS.broader):
-        c = c.format()  # to string
-        p = p.format()  # to string
+        c = text_type(c)  # to string
+        p = text_type(p)  # to string
         if c not in parents:
             parents[c] = set()
         parents[c].add(p)
@@ -72,14 +73,14 @@ def convert(infile, outfile):
     logger.debug('Building labels lookup hash')
     labels = {}
     for c, p in g.subject_objects(SKOS.altLabel):
-        labels[c.format()] = p.format()
+        labels[text_type(c)] = text_type(p)
     for c, p in g.subject_objects(SKOS.prefLabel):
-        labels[c.format()] = p.format()  # overwrite altLabel with prefLabel if found
+        labels[text_type(c)] = text_type(p)  # overwrite altLabel with prefLabel if found
 
     logger.debug('Building documents')
     docs = []
     for uriref in g.subjects(RDF.type, SKOS.Concept):
-        doc = {'id': uriref.format()}
+        doc = {'id': text_type(uriref)}
 
         for pred, obj in g.predicate_objects(uriref):
             if pred not in schema:
@@ -93,11 +94,11 @@ def convert(infile, outfile):
             if schema[pred] not in doc:
                 doc[schema[pred]] = []
 
-            doc[schema[pred]].append(obj.format())
+            doc[schema[pred]].append(text_type(obj))
 
         # Add labels from broader concepts
 
-        byLevel = [[uriref.format()]]  # Level 0
+        byLevel = [[text_type(uriref)]]  # Level 0
         level = 0
         while True:
             byLevel.append([])
