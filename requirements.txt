@@ -1,0 +1,3 @@
+six
+rdflib
+git+git://github.com/NatLibFi/Skosify.git
