@@ -15,7 +15,7 @@ if [ -z "$VOC" ]; then
     exit 1
 fi
 
-if [ ! -d "$VOC" ]; then
+if [ ! -d "/opt/$VOC" ]; then
     echo "Invalid vocabulary: $VOC"
     exit 1
 fi
@@ -28,9 +28,8 @@ fi
 
 echo "Vocabulary: $VOC"
 echo "Inferring and adding skos:narrower"
-python /opt/skosify/skosify/skosify.py --no-enrich-mappings --transitive --narrower --no-mark-top-concepts --infer /opt/datakilder/$VOC/$VOC.ttl -o /opt/datakilder/$VOC/$VOC-skosify.ttl
+python /opt/skosify/skosify/skosify.py --no-enrich-mappings --transitive --narrower --no-mark-top-concepts --infer /opt/$VOC/data/$VOC.ttl -o /opt/$VOC/data/$VOC-skosify.ttl
 echo "Pushing data to Fuseki"
-/opt/fuseki/s-put http://localhost:3030/ds/data http://data.ub.uio.no/$VOC /opt/datakilder/$VOC/$VOC-skosify.ttl
-rm /opt/datakilder/$VOC/$VOC-skosify.ttl
+/opt/fuseki/s-put http://localhost:3030/ds/data http://data.ub.uio.no/$VOC /opt/$VOC/data/$VOC-skosify.ttl
+rm /opt/$VOC/data/$VOC-skosify.ttl
 echo "$(date +'%Y-%M-%d %H:%m:%S %Z') - Job 'update-fuseki' complete"
-
